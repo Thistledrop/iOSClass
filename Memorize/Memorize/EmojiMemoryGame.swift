@@ -8,7 +8,17 @@ import SwiftUI
 
 class EmojiMemoryGame: ObservableObject
 {
+    @Published private var model: MemoryGame<String>
+    private(set) var theme: Theme
+    
     typealias Card = MemoryGame<String>.Card
+    
+    //initializes the Emoji Memory Game with a random theme
+    init(theme: Theme? = nil)
+    {
+        self.theme = theme ?? Theme.themes.randomElement()!
+        self.model = Self.createMemoryGame(self.theme)
+    }
     
     //creates a memory game with emojis
     static func createMemoryGame(_ GameTheme: Theme) -> MemoryGame<String>
@@ -32,47 +42,21 @@ class EmojiMemoryGame: ObservableObject
         {index in emojis[index]}
     }
     
+    var cards: Array<Card>
+    { model.cards }
+    
+    var score: Int
+    { model.score }
+    
+    var color: SwiftUI.Color
+    { theme.color }
+    
+    func choose(_ card: Card)
+    { model.choose(card: card) }
+    
     func restart()
-    {
-        self.model = Self.createMemoryGame(self.theme)
-    }
+    { self.model = Self.createMemoryGame(self.theme) }
     
     func shuffle()
     { model.shuffle() }
-    
-    //initializes the Emoji Memory Game with a random theme
-    init(theme: Theme = Theme.themes.randomElement()!)
-    {
-        self.theme = theme
-        self.model = Self.createMemoryGame(theme)
-    }
-    
-    @Published private var model: MemoryGame<String>
-    var theme: Theme
-    
-    var cards: Array<Card>
-    {model.cards}
-    
-    var score: Int
-    {model.score}
-    
-    //Takes the 'color' string from a theme and returns a Swift UI Color
-    var color: SwiftUI.Color
-    {
-        switch theme.color
-        {
-            case "red": return SwiftUI.Color.red
-            case "orange": return SwiftUI.Color.orange
-            case "yellow": return SwiftUI.Color.yellow
-            case "green": return SwiftUI.Color.green
-            case "blue": return SwiftUI.Color.blue
-            case "purple": return SwiftUI.Color.purple
-            case "gray": return SwiftUI.Color.gray
-            case "black": return SwiftUI.Color.black
-            default: return SwiftUI.Color.gray
-        }
-    }
-    
-    func choose(_ card: Card)
-    {model.choose(card: card)}
 }

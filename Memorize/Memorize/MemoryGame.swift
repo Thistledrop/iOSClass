@@ -12,10 +12,21 @@ struct MemoryGame<CardContent> where CardContent: Equatable
     //A memory game has a set of cards, a score, and an index for the first chosen card (sometimes)
         private(set) var cards: Array<Card>
         private(set) var score = 0
+        private var seenCards = [Card]()
+        private var firstCardTimestamp : TimeInterval = 0
+    
         private var indexOfFirstChosenCard: Int?
         {
-            get {cards.indices.filter({cards[$0].isFaceUp}).oneAndOnly}
-            set {cards.indices.forEach{cards[$0].isFaceUp = $0 == newValue}}
+            get { cards.indices.filter { cards[$0].isFaceUp }.only }
+            set
+            {
+                for index in cards.indices
+                {
+                    if cards[index].isFaceUp
+                    { seenCards.append(cards[index]) }
+                    cards[index].isFaceUp = index == newValue
+                }
+            }
         }
     
         mutating func shuffle()
@@ -28,33 +39,29 @@ struct MemoryGame<CardContent> where CardContent: Equatable
             //if the first face up card in cards array is not face up or already matched...
             if let chosenIndex: Int = cards.firstIndex(where: { card.id == $0.id }), !cards[chosenIndex].isFaceUp, !cards[chosenIndex].isMatched
             {
-                //if this is the second cad chosen
-                if let potentialMatchIndex = indexOfFirstChosenCard
+                //if this is the second card chosen
+                if let potentialMatchIndex = indexOfFirstChosenCard, potentialMatchIndex != chosenIndex
                 {
-                    //Update 'number of times seen' for both cards
-                    cards[chosenIndex].timesSeen += 1
-                    cards[potentialMatchIndex].timesSeen += 1
-                    //If the cards match
                     if cards[chosenIndex].content == cards[potentialMatchIndex].content
                     {
                         //set both cards to matched and add to score
                         cards[chosenIndex].isMatched = true
                         cards[potentialMatchIndex].isMatched = true
-                        score += 2
+                        let currentCardTimestamp = Date().timeIntervalSinceReferenceDate
+                        let multiplier = max(5 - (currentCardTimestamp - firstCardTimestamp), 1)
+                        score += Int(2 * multiplier)
                     }
-                    //if cards don't match, but either has been seen before
-                    else if cards[chosenIndex].timesSeen > 1 ||
-                                cards[potentialMatchIndex].timesSeen > 1
-                    //Subtract from score
-                    {score -= 1}
-                    //Toggle card to flip over
-                    self.cards[chosenIndex].isFaceUp = true
+                    else {
+                        score += seenCards.firstIndex(matching: cards[potentialMatchIndex]) != nil ? -1 : 0
+                        score += seenCards.firstIndex(matching: cards[chosenIndex]) != nil ? -1 : 0
+                    }
+                    
+                    cards[chosenIndex].isFaceUp = true
                 }
-                //if this is the first card chosen
                 else
                 {
-                    //set the index of the first chosen card
                     indexOfFirstChosenCard = chosenIndex
+                    firstCardTimestamp = Date().timeIntervalSinceReferenceDate
                 }
             }
         }
@@ -96,7 +103,6 @@ struct MemoryGame<CardContent> where CardContent: Equatable
             }
             var content: CardContent
             var id: Int
-            var timesSeen = 0
         
         
         // MARK: - Bonus Time
@@ -150,17 +156,5 @@ struct MemoryGame<CardContent> where CardContent: Equatable
             pastFaceUpTime = faceUpTime
             self.lastFaceUpDate = nil
         }
-    }
-}
-
-//an extension to Array, exists if an array contains only one element, is that element
-extension Array
-{
-    var oneAndOnly: Element?
-    {
-        if(self.count == 1)
-        {return self.first}
-        else
-        {return nil}
     }
 }

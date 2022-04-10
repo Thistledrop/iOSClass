@@ -8,13 +8,9 @@
 import SwiftUI
 
 struct EmojiMemoryGameView: View {
-    // our ViewModel
     @ObservedObject var game: EmojiMemoryGame
-    
-    // a token which provides a namespace for the id's used in matchGeometryEffect
     @Namespace private var dealingNamespace
     
-    // our body
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack {
@@ -26,7 +22,6 @@ struct EmojiMemoryGameView: View {
                     Spacer()
                     shuffle
                 }
-                .padding(.horizontal)
             }
             deckBody
         }
@@ -59,18 +54,18 @@ struct EmojiMemoryGameView: View {
         AspectVGrid(items: game.cards, aspectRatio: 2/3) { card in
             if isUndealt(card) || (card.isMatched && !card.isFaceUp) {
                 Color.clear
-            } else {
-                CardView(card: card)
-
-                    .matchedGeometryEffect(id: card.id, in: dealingNamespace)
-                    .padding(4)
-                    .transition(AnyTransition.asymmetric(insertion: .identity, removal: .scale))
-                    .zIndex(zIndex(of: card))
-                    .onTapGesture {
-                        withAnimation {
-                            game.choose(card)
-                        }
+            }
+            else {
+            CardView(card: card)
+                .matchedGeometryEffect(id: card.id, in: dealingNamespace)
+                .padding(4)
+                .transition(AnyTransition.asymmetric(insertion: .identity, removal: .scale))
+                .zIndex(zIndex(of: card))
+                .onTapGesture {
+                    withAnimation {
+                        game.choose(card)
                     }
+                }
             }
         }
         .foregroundColor(game.color)
@@ -80,12 +75,7 @@ struct EmojiMemoryGameView: View {
         ZStack {
             ForEach(game.cards.filter(isUndealt)) { card in
                 CardView(card: card)
-                    // see other matchedGeometryEffect above
                     .matchedGeometryEffect(id: card.id, in: dealingNamespace)
-                    // removal: .identity here because removal of this CardView
-                    // is actually going to be animated by the matchedGeometryEffect
-                    // so we don't want it to ALSO fade or scale out
-                    // (since transitions and matchedGeometryEffects are not mutually exclusive)
                     .transition(AnyTransition.asymmetric(insertion: .opacity, removal: .identity))
                     .zIndex(zIndex(of: card))
             }
@@ -117,20 +107,34 @@ struct EmojiMemoryGameView: View {
     }
     
     var shuffle: some View {
-        Button("Shuffle") {
+        Button("Shuffle")
+        {
             withAnimation {
                 game.shuffle()
             }
         }
+        .font(.body)
+        .padding(5)
+        .foregroundColor(Color.white)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(game.theme.color))
     }
     
     var restart: some View {
-        Button("Restart") {
+        Button("New Game")
+        {
             withAnimation {
                 dealt = []
                 game.restart()
             }
         }
+        .font(.body)
+        .padding(5)
+        .foregroundColor(Color.white)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(game.theme.color))
     }
     
     private struct CardConstants {
