@@ -37,7 +37,7 @@ class EmojiMemoryGame: ObservableObject
         if cardsToShow > GameTheme.contents.count {
             cardsToShow = GameTheme.contents.count
         }
-        
+        cardsToShow = 2
         return MemoryGame<String>(numOfPairs: cardsToShow)
         {index in emojis[index]}
     }
@@ -55,7 +55,9 @@ class EmojiMemoryGame: ObservableObject
     { model.choose(card: card) }
     
     func restart()
-    { self.model = Self.createMemoryGame(self.theme) }
+    {
+        self.model = Self.createMemoryGame(self.theme)
+    }
     
     func shuffle()
     { model.shuffle() }

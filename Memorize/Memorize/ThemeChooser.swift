@@ -37,6 +37,7 @@ struct ThemeChooser: View {
                 ThemeEditor(theme: theme)
                     .environmentObject(self.store)
             })
+            .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitle("Memorize")
             .navigationBarItems(
                 leading: Button(action: { self.store.themes.append(Theme.template) },

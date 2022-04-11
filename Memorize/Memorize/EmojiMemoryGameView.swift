@@ -28,7 +28,7 @@ struct EmojiMemoryGameView: View {
         .padding()
     }
 
-    @State private var dealt = Set<Int>()
+    @State private var dealt = Set<UUID>()
 
     private func deal(_ card: EmojiMemoryGame.Card) {
         dealt.insert(card.id)
