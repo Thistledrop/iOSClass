@@ -37,7 +37,6 @@ class EmojiMemoryGame: ObservableObject
         if cardsToShow > GameTheme.contents.count {
             cardsToShow = GameTheme.contents.count
         }
-        cardsToShow = 2
         return MemoryGame<String>(numOfPairs: cardsToShow)
         {index in emojis[index]}
     }
